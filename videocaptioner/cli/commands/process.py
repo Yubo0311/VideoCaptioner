@@ -67,6 +67,7 @@ def run(args: Namespace, config: dict) -> int:
         input=str(path), output=subtitle_path, format="srt", word_timestamps=need_word_ts,
         verbose=verbose, quiet=quiet, config=getattr(args, "config", None),
         asr=getattr(args, "asr", None), language=getattr(args, "language", None),
+        bijian_poll_interval=getattr(args, "bijian_poll_interval", None),
         fw_model=None, fw_device=None, fw_vad_method=None, fw_vad_threshold=None,
         fw_voice_extraction=False, fw_prompt=None,
         whisper_api_key=getattr(args, "whisper_api_key", None),

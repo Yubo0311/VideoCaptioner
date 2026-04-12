@@ -21,6 +21,9 @@ pip install videocaptioner[gui]     # 安装 CLI + GUI 桌面版
 # 语音转录（免费，无需 API Key）
 videocaptioner transcribe video.mp4 --asr bijian
 
+# 必剪接口遇到限流时，放慢任务状态轮询频率
+videocaptioner transcribe video.mp4 --asr bijian --bijian-poll-interval 3
+
 # 字幕翻译（免费必应翻译）
 videocaptioner subtitle input.srt --translator bing --target-language en
 
@@ -43,6 +46,13 @@ videocaptioner config set llm.model gpt-4o-mini
 ```
 
 配置优先级：`命令行参数 > 环境变量 (VIDEOCAPTIONER_*) > 配置文件 > 默认值`。运行 `videocaptioner config show` 查看当前配置。
+
+如果你给 `whisper-api` 单独走 OpenAI 兼容中转站，也可以直接在 `config.toml` 里写：
+
+```toml
+whisper-api = "sk-xxx"
+whisper-base-url = "https://your-proxy.example.com/v1"
+```
 
 <details>
 <summary>所有 CLI 命令一览</summary>

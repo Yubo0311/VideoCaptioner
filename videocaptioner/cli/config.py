@@ -28,6 +28,12 @@ APP_NAME = "videocaptioner"
 CONFIG_DIR = Path(user_config_dir(APP_NAME))
 CONFIG_FILE = CONFIG_DIR / "config.toml"
 
+# Backward/forward-compatible alias keys accepted in config set/get and config.toml.
+CONFIG_KEY_ALIASES: Dict[str, str] = {
+    "whisper-api": "whisper_api.api_key",
+    "whisper-base-url": "whisper_api.api_base",
+}
+
 # Environment variable mappings: env var name → config dotted key
 # Supports both OpenAI standard names and VIDEOCAPTIONER_ prefixed names
 ENV_MAP: Dict[str, str] = {
@@ -35,6 +41,9 @@ ENV_MAP: Dict[str, str] = {
     "OPENAI_API_KEY": "llm.api_key",
     "OPENAI_BASE_URL": "llm.api_base",
     "OPENAI_MODEL": "llm.model",
+    # Whisper API standard-style names
+    "WHISPER_API_KEY": "whisper_api.api_key",
+    "WHISPER_BASE_URL": "whisper_api.api_base",
     # VIDEOCAPTIONER_ prefixed (take precedence over standard)
     "VIDEOCAPTIONER_LLM_API_KEY": "llm.api_key",
     "VIDEOCAPTIONER_LLM_API_BASE": "llm.api_base",
@@ -60,6 +69,9 @@ DEFAULTS: Dict[str, Any] = {
     "transcribe": {
         "asr": "bijian",
         "language": "auto",
+        "bijian": {
+            "poll_interval": 1.0,
+        },
         "faster_whisper": {
             "model": "large-v3",
             "device": "auto",
@@ -112,6 +124,11 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return result
 
 
+def canonicalize_key(key: str) -> str:
+    """Map supported alias keys to canonical dotted keys."""
+    return CONFIG_KEY_ALIASES.get(key, key)
+
+
 def _set_nested(d: dict, dotted_key: str, value: Any) -> None:
     """Set a value in a nested dict using dotted key notation (e.g. 'llm.api_key')."""
     keys = dotted_key.split(".")
@@ -132,6 +149,21 @@ def _get_nested(d: dict, dotted_key: str, default: Any = None) -> Any:
     return d
 
 
+def _normalize_alias_entries(config: dict) -> dict:
+    """Normalize alias keys from parsed config files into canonical nested keys."""
+    normalized = config.copy()
+
+    for alias_key, canonical_key in CONFIG_KEY_ALIASES.items():
+        if alias_key not in normalized:
+            continue
+
+        alias_value = normalized.pop(alias_key)
+        if _get_nested(normalized, canonical_key) is None:
+            _set_nested(normalized, canonical_key, alias_value)
+
+    return normalized
+
+
 def load_config_file(path: Optional[Path] = None) -> dict:
     """Load and parse a TOML config file. Returns empty dict if file doesn't exist."""
     path = path or CONFIG_FILE
@@ -139,7 +171,7 @@ def load_config_file(path: Optional[Path] = None) -> dict:
         return {}
     try:
         with open(path, "rb") as f:
-            return tomllib.load(f)
+            return _normalize_alias_entries(tomllib.load(f))
     except Exception as e:
         import sys
         print(f"! Warning: Failed to parse config file {path}: {e}", file=sys.stderr)
@@ -181,7 +213,7 @@ def build_config(
 
 def get(config: dict, key: str, default: Any = None) -> Any:
     """Convenience accessor for dotted keys."""
-    return _get_nested(config, key, default)
+    return _get_nested(config, canonicalize_key(key), default)
 
 
 def ensure_config_dir() -> Path:
@@ -193,7 +225,7 @@ def ensure_config_dir() -> Path:
 def _parse_value(raw: str, key: str) -> Any:
     """Parse a string value into the correct Python type based on DEFAULTS."""
     # Infer type from defaults
-    default_val = _get_nested(DEFAULTS, key)
+    default_val = _get_nested(DEFAULTS, canonicalize_key(key))
     if isinstance(default_val, bool):
         if raw.lower() in ("true", "1", "yes"):
             return True
@@ -217,9 +249,10 @@ def save_config_value(key: str, value: str, config_path: Optional[Path] = None) 
     """Set a single value in the config file. Creates the file if it doesn't exist."""
     path = config_path or CONFIG_FILE
     ensure_config_dir()
+    canonical_key = canonicalize_key(key)
 
     existing = load_config_file(path)
-    _set_nested(existing, key, _parse_value(value, key))
+    _set_nested(existing, canonical_key, _parse_value(value, canonical_key))
 
     with open(path, "w", encoding="utf-8") as f:
         _write_toml(f, existing)

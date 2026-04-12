@@ -44,6 +44,7 @@ videocaptioner transcribe <文件> [选项]
 | `--asr` | ASR 引擎：`bijian`(默认,免费) `jianying`(免费) `whisper-api` `whisper-cpp`。bijian/jianying 仅支持中英文，其他语言用 whisper-api 或 whisper-cpp |
 | `--language CODE` | 源语言 ISO 639-1 代码，如 `zh` `en` `ja`，或 `auto`（默认） |
 | `--word-timestamps` | 输出词级时间戳（配合字幕断句使用） |
+| `--bijian-poll-interval SECONDS` | `bijian` 任务状态轮询间隔，单位秒；遇到限流时可适当调大，如 `2` 或 `3` |
 | `--whisper-api-key` | Whisper API 密钥（仅 `--asr whisper-api`） |
 | `--whisper-api-base` | Whisper API 地址 |
 | `--whisper-model` | Whisper 模型名（whisper-api 默认 whisper-1，whisper-cpp 默认 large-v2） |
@@ -190,6 +191,8 @@ videocaptioner config init              # 交互式初始化
 | `OPENAI_API_KEY` | LLM API 密钥 |
 | `OPENAI_BASE_URL` | LLM API 地址 |
 | `OPENAI_MODEL` | LLM 模型名 |
+| `WHISPER_API_KEY` | Whisper API 密钥 |
+| `WHISPER_BASE_URL` | Whisper API Base URL |
 
 ### 配置文件
 
@@ -213,6 +216,15 @@ translate = false
 service = "llm"
 target_language = "zh-Hans"
 ```
+
+Whisper API 也支持更直观的顶层别名键，适合给中转站单独配置：
+
+```toml
+whisper-api = "sk-xxx"
+whisper-base-url = "https://your-proxy.example.com/v1"
+```
+
+它们会自动映射到内部的 `whisper_api.api_key` 和 `whisper_api.api_base`。
 
 运行 `videocaptioner config show` 查看完整配置项。
 

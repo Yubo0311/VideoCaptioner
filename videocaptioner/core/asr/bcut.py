@@ -33,6 +33,7 @@ class BcutASR(BaseASR):
         audio_input: Union[str, bytes],
         use_cache: bool = True,
         need_word_time_stamp: bool = False,
+        poll_interval: float = 1.0,
     ):
         super().__init__(audio_input, use_cache=use_cache)
         self.session = requests.Session()
@@ -50,6 +51,7 @@ class BcutASR(BaseASR):
         self.__download_url: Optional[str] = None
 
         self.need_word_time_stamp = need_word_time_stamp
+        self.poll_interval = max(poll_interval, 0.1)
 
     def upload(self) -> None:
         """Request upload authorization and upload audio file."""
@@ -169,7 +171,7 @@ class BcutASR(BaseASR):
             task_resp = self.result()
             if task_resp["state"] == 4:
                 break
-            time.sleep(1)
+            time.sleep(self.poll_interval)
 
         if task_resp is None or task_resp["state"] != 4:
             raise RuntimeError("ASR task failed or timeout")

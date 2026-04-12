@@ -555,6 +555,7 @@ class TranscribeConfig:
     transcribe_language: str = ""
     need_word_time_stamp: bool = True
     output_format: Optional[TranscribeOutputFormatEnum] = None
+    bijian_poll_interval: float = 1.0
     # Whisper Cpp 配置
     whisper_model: Optional[WhisperModelEnum] = None
     # Whisper API 配置
@@ -588,6 +589,7 @@ class TranscribeConfig:
         )
         lines.append(f"Language: {self.transcribe_language or 'Auto'}")
         lines.append(f"Word Timestamp: {self.need_word_time_stamp}")
+        lines.append(f"Bijian Poll Interval: {self.bijian_poll_interval}s")
         lines.append(
             f"Output Format: {self.output_format.value if self.output_format else 'None'}"
         )

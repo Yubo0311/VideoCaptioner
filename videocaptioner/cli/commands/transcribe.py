@@ -100,6 +100,10 @@ def run(args: Namespace, config: dict) -> int:
         transcribe_model=asr_map.get(asr_engine),
         transcribe_language=language if language != "auto" else "",
         need_word_time_stamp=getattr(args, "word_timestamps", False),
+        bijian_poll_interval=max(
+            get(config, "transcribe.bijian.poll_interval", 1.0),
+            0.1,
+        ),
         # FasterWhisper options
         faster_whisper_model=fw_model_enum,
         faster_whisper_model_dir=None,

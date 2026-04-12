@@ -3,7 +3,7 @@
 import pytest
 
 from videocaptioner.cli import exit_codes as EXIT
-from videocaptioner.cli.main import main
+from videocaptioner.cli.main import build_parser, main
 
 
 class TestMainParser:
@@ -63,6 +63,21 @@ class TestTranscribeParser:
         with pytest.raises(SystemExit) as exc:
             main(["transcribe", "test.mp4", "-v", "-q"])
         assert exc.value.code == 2
+
+    def test_bijian_poll_interval_parses(self, tmp_path):
+        parser = build_parser()
+        args = parser.parse_args(
+            [
+                "transcribe",
+                "test.wav",
+                "--asr",
+                "bijian",
+                "--bijian-poll-interval",
+                "3.5",
+            ]
+        )
+
+        assert args.bijian_poll_interval == 3.5
 
 
 class TestSubtitleParser:

@@ -1,5 +1,6 @@
 """BcutASR integration tests."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -136,3 +137,52 @@ class TestBcutASR:
 
         if not need_word_ts and len(result.segments) > 0:
             assert not result.is_word_timestamp()
+
+
+class TestBcutASRPolling:
+    """Unit tests for BcutASR polling behavior."""
+
+    def test_uses_configured_poll_interval(self, monkeypatch):
+        asr = BcutASR(audio_input=b"fake-audio", poll_interval=2.5)
+
+        monkeypatch.setattr(asr, "_check_rate_limit", lambda: None)
+        monkeypatch.setattr(asr, "upload", lambda: None)
+        monkeypatch.setattr(asr, "create_task", lambda: "task-1")
+
+        states = iter(
+            [
+                {"state": 2},
+                {"state": 3},
+                {
+                    "state": 4,
+                    "result": json.dumps(
+                        {
+                            "utterances": [
+                                {
+                                    "transcript": "hello",
+                                    "start_time": 0,
+                                    "end_time": 1000,
+                                    "words": [],
+                                }
+                            ]
+                        }
+                    ),
+                },
+            ]
+        )
+        monkeypatch.setattr(asr, "result", lambda task_id=None: next(states))
+
+        sleep_calls = []
+        monkeypatch.setattr(
+            "videocaptioner.core.asr.bcut.time.sleep",
+            lambda seconds: sleep_calls.append(seconds),
+        )
+
+        result = asr.run()
+
+        assert len(result.segments) == 1
+        assert sleep_calls == [2.5, 2.5]
+
+    def test_poll_interval_has_minimum_floor(self):
+        asr = BcutASR(audio_input=b"fake-audio", poll_interval=0)
+        assert asr.poll_interval == 0.1

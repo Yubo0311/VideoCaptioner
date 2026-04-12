@@ -101,6 +101,12 @@ def _build_transcribe_parser(subparsers) -> None:
                      help="Source language as ISO 639-1 code, or 'auto' (default: auto)")
     asr.add_argument("--word-timestamps", action="store_true",
                      help="Include word-level timestamps (for subtitle splitting)")
+    asr.add_argument(
+        "--bijian-poll-interval",
+        type=float,
+        metavar="SECONDS",
+        help="Task status polling interval for --asr bijian in seconds (default: 1.0)",
+    )
     asr.add_argument("--whisper-api-key", metavar="KEY",
                      help="Whisper API key (for --asr whisper-api)")
     asr.add_argument("--whisper-api-base", metavar="URL",
@@ -248,6 +254,12 @@ def _build_process_parser(subparsers) -> None:
                       help="ASR engine (default: bijian)")
     pipe.add_argument("--language", metavar="CODE",
                       help="Source language as ISO 639-1 code, or 'auto' (default: auto)")
+    pipe.add_argument(
+        "--bijian-poll-interval",
+        type=float,
+        metavar="SECONDS",
+        help="Task status polling interval for --asr bijian in seconds (default: 1.0)",
+    )
     pipe.add_argument("--whisper-api-key", metavar="KEY", help="Whisper API key (for --asr whisper-api)")
     pipe.add_argument("--translator", choices=["llm", "bing", "google"],
                       help="Translation service (default: llm). bing and google are free")
@@ -376,6 +388,10 @@ def _build_cli_overrides(args: argparse.Namespace) -> dict:
     # Transcribe
     _set("transcribe.asr", getattr(args, "asr", None))
     _set("transcribe.language", getattr(args, "language", None))
+    _set(
+        "transcribe.bijian.poll_interval",
+        getattr(args, "bijian_poll_interval", None),
+    )
 
     # FasterWhisper
     _set("transcribe.faster_whisper.model", getattr(args, "fw_model", None))

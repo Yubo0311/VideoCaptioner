@@ -89,6 +89,7 @@ def _create_bijian_asr(audio_path: str, config: TranscribeConfig) -> ChunkedASR:
     asr_kwargs = {
         "use_cache": True,
         "need_word_time_stamp": config.need_word_time_stamp,
+        "poll_interval": config.bijian_poll_interval,
     }
     return ChunkedASR(asr_class=BcutASR, audio_path=audio_path, asr_kwargs=asr_kwargs)
 

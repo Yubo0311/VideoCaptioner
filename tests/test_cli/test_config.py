@@ -122,6 +122,20 @@ class TestConfigRoundtrip:
         assert loaded["subtitle"]["thread_num"] == 8
         assert loaded["subtitle"]["optimize"] is False
 
+    def test_save_alias_key_roundtrip(self, tmp_path):
+        config_file = tmp_path / "config.toml"
+
+        save_config_value("whisper-api", "sk-test", config_path=config_file)
+        save_config_value(
+            "whisper-base-url",
+            "https://proxy.example.com/v1",
+            config_path=config_file,
+        )
+
+        loaded = load_config_file(config_file)
+        assert loaded["whisper_api"]["api_key"] == "sk-test"
+        assert loaded["whisper_api"]["api_base"] == "https://proxy.example.com/v1"
+
 
 class TestBuildConfig:
     def test_defaults_only(self):
@@ -141,3 +155,22 @@ class TestBuildConfig:
         monkeypatch.setenv("VIDEOCAPTIONER_LLM_MODEL", "env-model")
         config = build_config(cli_overrides={"llm": {"model": "cli-model"}})
         assert config["llm"]["model"] == "cli-model"
+
+    def test_file_alias_keys_are_normalized(self, tmp_path):
+        config_file = tmp_path / "config.toml"
+        config_file.write_text(
+            'whisper-api = "sk-alias"\nwhisper-base-url = "https://proxy.example.com/v1"\n',
+            encoding="utf-8",
+        )
+
+        config = build_config(config_path=config_file)
+        assert config["whisper_api"]["api_key"] == "sk-alias"
+        assert config["whisper_api"]["api_base"] == "https://proxy.example.com/v1"
+
+    def test_whisper_env_aliases(self, monkeypatch):
+        monkeypatch.setenv("WHISPER_API_KEY", "sk-env")
+        monkeypatch.setenv("WHISPER_BASE_URL", "https://proxy.example.com/v1")
+
+        config = build_config()
+        assert config["whisper_api"]["api_key"] == "sk-env"
+        assert config["whisper_api"]["api_base"] == "https://proxy.example.com/v1"

@@ -120,7 +120,11 @@ def _init() -> int:
     print("Whisper API Configuration (only needed for --asr whisper-api)")
     whisper_key = _prompt("  Whisper API Key [skip]: ")
     if whisper_key:
-        save_config_value("whisper_api.api_key", whisper_key)
+        save_config_value("whisper-api", whisper_key)
+
+    whisper_base = _prompt("  Whisper Base URL [https://api.openai.com/v1]: ")
+    if whisper_base:
+        save_config_value("whisper-base-url", whisper_base)
 
     print()
     output.success(f"Configuration saved to {CONFIG_FILE}")
