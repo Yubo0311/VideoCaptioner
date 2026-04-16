@@ -39,6 +39,7 @@ class BaseASR:
         audio_input: Optional[Union[str, bytes]] = None,
         use_cache: bool = False,
         need_word_time_stamp: bool = False,
+        enforce_rate_limit: bool = False,
     ):
         """Initialize ASR with audio data.
 
@@ -50,6 +51,7 @@ class BaseASR:
         self.audio_input = audio_input
         self.file_binary = None
         self.use_cache = use_cache
+        self.enforce_rate_limit = enforce_rate_limit
         self._set_data()
         self._cache = get_asr_cache()
         self.audio_duration = self._get_audio_duration()
@@ -157,6 +159,9 @@ class BaseASR:
 
     def _check_rate_limit(self) -> None:
         """Check rate limit for public charity services."""
+        if not self.enforce_rate_limit:
+            return
+
         service_name = self.__class__.__name__
         tag = f"rate_limit:{service_name}"
         time_limit = time.time() - self.RATE_LIMIT_TIME_WINDOW
@@ -190,7 +195,13 @@ class BaseASR:
             logger.warning(error_msg)
             raise RuntimeError(error_msg)
 
-        # Record current call (store duration directly as float)
+    def _record_rate_limit(self) -> None:
+        """Record a successful public ASR call for future rate limiting."""
+        if not self.enforce_rate_limit:
+            return
+
+        service_name = self.__class__.__name__
+        tag = f"rate_limit:{service_name}"
         self._cache.set(
             f"rate_limit_record:{service_name}:{uuid.uuid4()}",
             self.audio_duration,

@@ -186,3 +186,57 @@ class TestBcutASRPolling:
     def test_poll_interval_has_minimum_floor(self):
         asr = BcutASR(audio_input=b"fake-audio", poll_interval=0)
         assert asr.poll_interval == 0.1
+
+    def test_failed_run_does_not_record_rate_limit(self, monkeypatch):
+        asr = BcutASR(audio_input=b"fake-audio", poll_interval=1.0)
+
+        monkeypatch.setattr(asr, "_check_rate_limit", lambda: None)
+        monkeypatch.setattr(asr, "upload", lambda: None)
+        monkeypatch.setattr(asr, "create_task", lambda: "task-1")
+        monkeypatch.setattr(asr, "result", lambda task_id=None: {"state": 2})
+        monkeypatch.setattr(
+            "videocaptioner.core.asr.bcut.time.sleep",
+            lambda seconds: None,
+        )
+
+        record_calls = []
+        monkeypatch.setattr(asr, "_record_rate_limit", lambda: record_calls.append(True))
+
+        with pytest.raises(RuntimeError, match="ASR task failed or timeout"):
+            asr.run()
+
+        assert record_calls == []
+
+    def test_successful_run_records_rate_limit_once(self, monkeypatch):
+        asr = BcutASR(audio_input=b"fake-audio", poll_interval=1.0)
+
+        monkeypatch.setattr(asr, "_check_rate_limit", lambda: None)
+        monkeypatch.setattr(asr, "upload", lambda: None)
+        monkeypatch.setattr(asr, "create_task", lambda: "task-1")
+        monkeypatch.setattr(
+            asr,
+            "result",
+            lambda task_id=None: {
+                "state": 4,
+                "result": json.dumps(
+                    {
+                        "utterances": [
+                            {
+                                "transcript": "hello",
+                                "start_time": 0,
+                                "end_time": 1000,
+                                "words": [],
+                            }
+                        ]
+                    }
+                ),
+            },
+        )
+
+        record_calls = []
+        monkeypatch.setattr(asr, "_record_rate_limit", lambda: record_calls.append(True))
+
+        result = asr.run()
+
+        assert len(result.segments) == 1
+        assert record_calls == [True]

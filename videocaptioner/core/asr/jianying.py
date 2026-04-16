@@ -29,8 +29,13 @@ class JianYingASR(BaseASR):
         need_word_time_stamp: bool = False,
         start_time: float = 0,
         end_time: float = 6000,
+        enforce_rate_limit: bool = False,
     ):
-        super().__init__(audio_input, use_cache)
+        super().__init__(
+            audio_input,
+            use_cache,
+            enforce_rate_limit=enforce_rate_limit,
+        )
         self.audio_input = audio_input
         self.end_time = end_time
         self.start_time = start_time
@@ -127,6 +132,7 @@ class JianYingASR(BaseASR):
         if callback:
             callback(*ASRStatus.COMPLETED.callback_tuple())
 
+        self._record_rate_limit()
         return resp_data
 
     def _make_segments(self, resp_data: dict) -> List[ASRDataSeg]:

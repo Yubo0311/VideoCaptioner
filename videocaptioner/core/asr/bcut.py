@@ -34,8 +34,13 @@ class BcutASR(BaseASR):
         use_cache: bool = True,
         need_word_time_stamp: bool = False,
         poll_interval: float = 25.0,
+        enforce_rate_limit: bool = False,
     ):
-        super().__init__(audio_input, use_cache=use_cache)
+        super().__init__(
+            audio_input,
+            use_cache=use_cache,
+            enforce_rate_limit=enforce_rate_limit,
+        )
         self.session = requests.Session()
         self.task_id: Optional[str] = None
         self.__etags: List[str] = []
@@ -176,6 +181,7 @@ class BcutASR(BaseASR):
         if task_resp is None or task_resp["state"] != 4:
             raise RuntimeError("ASR task failed or timeout")
 
+        self._record_rate_limit()
         callback(*ASRStatus.COMPLETED.callback_tuple())
         return json.loads(task_resp["result"])
 
