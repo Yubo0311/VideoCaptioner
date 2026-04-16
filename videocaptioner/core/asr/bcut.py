@@ -33,7 +33,7 @@ class BcutASR(BaseASR):
         audio_input: Union[str, bytes],
         use_cache: bool = True,
         need_word_time_stamp: bool = False,
-        poll_interval: float = 1.0,
+        poll_interval: float = 25.0,
     ):
         super().__init__(audio_input, use_cache=use_cache)
         self.session = requests.Session()

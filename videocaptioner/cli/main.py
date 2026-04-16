@@ -105,7 +105,7 @@ def _build_transcribe_parser(subparsers) -> None:
         "--bijian-poll-interval",
         type=float,
         metavar="SECONDS",
-        help="Task status polling interval for --asr bijian in seconds (default: 1.0)",
+        help="Task status polling interval for --asr bijian in seconds (default: 25.0)",
     )
     asr.add_argument("--whisper-api-key", metavar="KEY",
                      help="Whisper API key (for --asr whisper-api)")
@@ -258,7 +258,7 @@ def _build_process_parser(subparsers) -> None:
         "--bijian-poll-interval",
         type=float,
         metavar="SECONDS",
-        help="Task status polling interval for --asr bijian in seconds (default: 1.0)",
+        help="Task status polling interval for --asr bijian in seconds (default: 25.0)",
     )
     pipe.add_argument("--whisper-api-key", metavar="KEY", help="Whisper API key (for --asr whisper-api)")
     pipe.add_argument("--translator", choices=["llm", "bing", "google"],

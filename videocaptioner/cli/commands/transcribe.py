@@ -101,7 +101,7 @@ def run(args: Namespace, config: dict) -> int:
         transcribe_language=language if language != "auto" else "",
         need_word_time_stamp=getattr(args, "word_timestamps", False),
         bijian_poll_interval=max(
-            get(config, "transcribe.bijian.poll_interval", 1.0),
+            get(config, "transcribe.bijian.poll_interval", 25.0),
             0.1,
         ),
         # FasterWhisper options

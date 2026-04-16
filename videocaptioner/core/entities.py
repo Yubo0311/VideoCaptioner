@@ -555,7 +555,7 @@ class TranscribeConfig:
     transcribe_language: str = ""
     need_word_time_stamp: bool = True
     output_format: Optional[TranscribeOutputFormatEnum] = None
-    bijian_poll_interval: float = 1.0
+    bijian_poll_interval: float = 25.0
     # Whisper Cpp 配置
     whisper_model: Optional[WhisperModelEnum] = None
     # Whisper API 配置

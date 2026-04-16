@@ -8,9 +8,32 @@
 
 ## 安装
 
+从 PyPI 安装：
+
 ```bash
 pip install videocaptioner          # 仅安装 CLI（轻量，无 GUI 依赖）
 pip install videocaptioner[gui]     # 安装 CLI + GUI 桌面版
+```
+
+从本地源码运行：
+
+```bash
+git clone https://github.com/WEIFENG2333/VideoCaptioner.git
+cd VideoCaptioner
+uv sync
+uv run python -m videocaptioner --help
+uv run python -m videocaptioner transcribe video.mp4 --asr bijian
+```
+
+从本地源码安装为命令：
+
+```bash
+git clone https://github.com/WEIFENG2333/VideoCaptioner.git
+cd VideoCaptioner
+pip install -e .
+# 如果需要 GUI：
+pip install -e ".[gui]"
+videocaptioner --help
 ```
 
 免费功能（必剪语音识别、必应/谷歌翻译）**无需任何配置，安装即用**。
@@ -21,8 +44,8 @@ pip install videocaptioner[gui]     # 安装 CLI + GUI 桌面版
 # 语音转录（免费，无需 API Key）
 videocaptioner transcribe video.mp4 --asr bijian
 
-# 必剪接口遇到限流时，放慢任务状态轮询频率
-videocaptioner transcribe video.mp4 --asr bijian --bijian-poll-interval 3
+# 必剪接口默认每 25 秒轮询一次；如果需要可以手动覆盖
+videocaptioner transcribe video.mp4 --asr bijian --bijian-poll-interval 25
 
 # 字幕翻译（免费必应翻译）
 videocaptioner subtitle input.srt --translator bing --target-language en

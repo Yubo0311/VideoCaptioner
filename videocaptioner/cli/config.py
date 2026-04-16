@@ -70,7 +70,7 @@ DEFAULTS: Dict[str, Any] = {
         "asr": "bijian",
         "language": "auto",
         "bijian": {
-            "poll_interval": 1.0,
+            "poll_interval": 25.0,
         },
         "faster_whisper": {
             "model": "large-v3",

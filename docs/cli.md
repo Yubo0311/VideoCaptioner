@@ -44,7 +44,7 @@ videocaptioner transcribe <文件> [选项]
 | `--asr` | ASR 引擎：`bijian`(默认,免费) `jianying`(免费) `whisper-api` `whisper-cpp`。bijian/jianying 仅支持中英文，其他语言用 whisper-api 或 whisper-cpp |
 | `--language CODE` | 源语言 ISO 639-1 代码，如 `zh` `en` `ja`，或 `auto`（默认） |
 | `--word-timestamps` | 输出词级时间戳（配合字幕断句使用） |
-| `--bijian-poll-interval SECONDS` | `bijian` 任务状态轮询间隔，单位秒；遇到限流时可适当调大，如 `2` 或 `3` |
+| `--bijian-poll-interval SECONDS` | `bijian` 任务状态轮询间隔，单位秒；默认 `25`，如需更慢可继续调大 |
 | `--whisper-api-key` | Whisper API 密钥（仅 `--asr whisper-api`） |
 | `--whisper-api-base` | Whisper API 地址 |
 | `--whisper-model` | Whisper 模型名（whisper-api 默认 whisper-1，whisper-cpp 默认 large-v2） |
